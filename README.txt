@@ -13,8 +13,9 @@ for specifying which fields must be unique. The administrator may specify
 whether each field must be unique or whether the fields in combination must
 be unique.
 
-It has been tested with CCK-5.x-1.6-1 with the integer and text fields, and
-with the date field from Date 5.x-1.8.
+It has been tested with the integer and text fields from CCK-5.x-1.6-1,
+the date field from Date 5.x-1.8, the name fields from cck_fullname-5.x-1.5,
+and the e-mail field from email-5.x-1.x.
 
 This does not work well with the 'decimal' field in the CCK 5.x releases, 
 due to a problem with the floating point datatype used. (However, this is

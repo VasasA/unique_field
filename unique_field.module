@@ -7,7 +7,7 @@
  * 
  * unique_field
  * by Joe Turgeon (http://arithmetric.com)
- * version 02/18/2008
+ * version 02/18/2008-2
  * licensed under GPL version 2
  */
 
@@ -50,11 +50,16 @@ function unique_field_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         }
         else {
           $f = $node->$field;
-          $value = $f[0]['value'];
+          $value = $f[0];
         }
         $match = unique_field_match_value($field, $value, $scope, $node->type);
-        if ($comp==UNIQUE_FIELD_COMP_EACH && count($match)>0 && $match[0]!==$node->nid) {
-          form_set_error($field, t('This field requires a unique value, and an entry already exists with the value: @value', array('@value' => $value)));
+        // remove matches of this node
+        if ($node->nid && is_array($match) && in_array($node->nid, $match)) {
+          $key = array_search($node->nid, $match);
+          unset($match[$key]);
+        }
+        if ($comp==UNIQUE_FIELD_COMP_EACH && is_array($match) && count($match)) {
+          form_set_error($field, t('This field requires a unique value, and the specified value is already used.'));
         }
 //debug
 //        drupal_set_message('matches: '. print_r($match, TRUE));
@@ -62,13 +67,7 @@ function unique_field_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       }
 //debug
 //      drupal_set_message('comp: '. $comp .' allmatch: '. print_r($allmatch, TRUE) .' count: '. count($allmatch));
-      if (is_array($allmatch) && in_array($node->nid, $allmatch)) {
-        $key = array_search($node->nid, $allmatch);
-        unset($allmatch[$key]);
-      }
       if ($comp==UNIQUE_FIELD_COMP_ALL && is_array($allmatch) && count($allmatch)) {
-//debug
-//        drupal_set_message('all match failed');
         foreach ($fields as $field) {
           form_set_error($field, t('These fields must be unique in combination.'));
         }
@@ -80,49 +79,56 @@ function unique_field_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
 /** 
  * Find nodes with a matching field value within a given scope.
  */
-function unique_field_match_value($field, $value, $scope, $ntype = NULL) {
+function unique_field_match_value($field, $values, $scope, $ntype = NULL) {
   // generate query based on arguments
   if ($field===UNIQUE_FIELD_FIELDS_TITLE) {
     $qtbl = 'node';
-    $qcol = 'title';
-    $qval = "'". mysql_real_escape_string($value) ."'";
+    $qwhere = "title = '". mysql_real_escape_string($values) ."' ";
     if ($scope==UNIQUE_FIELD_SCOPE_TYPE && is_string($ntype) && !empty($ntype)) {
-      $qwhere = "type = '". mysql_real_escape_string($ntype) ."'";
+      $qwhere .= "AND type = '". mysql_real_escape_string($ntype) ."' ";
     }
   }
   else {
     $f = content_fields($field, $ntype);
     $db = content_database_info($f);
 //debug
-//drupal_set_message(print_r($db, TRUE));
+//drupal_set_message('field: '. $field .' value: '. print_r($values, TRUE) .' db: '. print_r($db, TRUE));
     $qtbl = mysql_real_escape_string($db['table']);
-    $qcol = mysql_real_escape_string($db['columns']['value']['column']);
-    $dbtype = $db['columns']['value']['type'];
-    if ($dbtype=='char' || $dbtype=='varchar' || $dtype=='tinytext' || $dtype=='text' || $dtype=='mediumtext' || $dtype=='longtext') {
-      $qval = "'". mysql_real_escape_string($value) ."'";
-    }
-    else if (is_numeric($value)) {
-      $qval = mysql_real_escape_string($value);
-    }
-    else {
-      watchdog('unique_field', t('Could not formulate query for unique_field_match_value on @field with data type @dbtype.', array('@field' => $field, '@dbtype' => $dbtype)), WATCHDOG_WARNING);
-      return;
+    $qwhere = '';
+    foreach ($values as $key => $val) {
+      if (!isset($db['columns'][$key]['column'])) {
+        continue;
+      }
+      if (strlen($qwhere)>0) {
+        $qwhere .= 'AND ';
+      }
+      $qwhere .= mysql_real_escape_string($db['columns'][$key]['column']) .' = ';
+      $dbtype = $db['columns'][$key]['type'];
+      if ($dbtype=='char' || $dbtype=='varchar' || $dbtype=='tinytext' || $dbtype=='text' || $dbtype=='mediumtext' || $dbtype=='longtext') {
+        $qwhere .= "'". mysql_real_escape_string($val) ."' ";
+      }
+      else if (is_numeric($val)) {
+        $qwhere .= mysql_real_escape_string($val) ." ";
+      }
+      else {
+        $msg = t('Could not formulate query for unique_field_match_value on @field with data type @dbtype.', array('@field' => $field, '@dbtype' => $dbtype));
+        drupal_set_message($msg, 'error');
+        watchdog('unique_field', $msg, WATCHDOG_WARNING);
+        return;
+      }
     }
     if ($scope==UNIQUE_FIELD_SCOPE_TYPE && is_string($ntype) && !empty($ntype)) {
       $qjoin = "JOIN {node} ON {$qtbl}.nid = node.nid";
-      $qwhere = "type = '". mysql_real_escape_string($ntype) ."'";
+      $qwhere .= "AND type = '". mysql_real_escape_string($ntype) ."'";
     }
   }
   
   // do query
-  $q = "SELECT {$qtbl}.vid, {$qtbl}.nid FROM {". $qtbl ."} ";
+  $q = "SELECT DISTINCT({$qtbl}.nid) FROM {". $qtbl ."} ";
   if (!empty($qjoin)) {
     $q .= $qjoin;
   }
-  $q .= " WHERE ". $qcol ." = ". $qval;
-  if (!empty($qwhere)) {
-    $q .= ' AND '. $qwhere;
-  }
+  $q .= " WHERE ". $qwhere;
 //debug
 //  drupal_set_message($q);
   $res = db_query($q);
