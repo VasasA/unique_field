@@ -1,0 +1,187 @@
+<?php
+// $Id$
+
+/**
+ * @file
+ * Allows requirement that node titles or CCK fields have unique values.
+ * 
+ * unique_field
+ * by Joe Turgeon (http://arithmetric.com)
+ * version 02/18/2008
+ * licensed under GPL version 2
+ */
+
+define('UNIQUE_FIELD_PERM', 'designate fields as unique');
+define('UNIQUE_FIELD_SCOPE_TYPE', 'type');
+define('UNIQUE_FIELD_SCOPE_ALL', 'all');
+define('UNIQUE_FIELD_COMP_EACH', 'each');
+define('UNIQUE_FIELD_COMP_ALL', 'all');
+define('UNIQUE_FIELD_FIELDS_TITLE', 'title');
+
+/**
+ * Implementation of hook_perm()
+ */
+function unique_field_perm() {
+  return array(UNIQUE_FIELD_PERM);
+}
+
+/**
+ * Implementation of hook_form_alter()
+ */
+function unique_field_form_alter($form_id, &$form) {
+  if (user_access(UNIQUE_FIELD_PERM) && $form_id=='node_type_form' && isset($form['#node_type'])) {
+    unique_field_node_settings_form($form);
+  }
+}
+
+/**
+ * Implementation of hook_nodeapi()
+ */
+function unique_field_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if ($op=='validate') {
+    $fields = variable_get('unique_field_fields_'. $node->type, array());
+    if (count($fields)) {
+      $scope = variable_get('unique_field_scope_'. $node->type, UNIQUE_FIELD_SCOPE_TYPE);
+      $comp = variable_get('unique_field_comp_'. $node->type, UNIQUE_FIELD_COMP_EACH);
+      $allmatch = NULL;
+      foreach ($fields as $field) {
+        if ($field==UNIQUE_FIELD_FIELDS_TITLE) {
+          $value = $node->title;
+        }
+        else {
+          $f = $node->$field;
+          $value = $f[0]['value'];
+        }
+        $match = unique_field_match_value($field, $value, $scope, $node->type);
+        if ($comp==UNIQUE_FIELD_COMP_EACH && count($match)>0 && $match[0]!==$node->nid) {
+          form_set_error($field, t('This field requires a unique value, and an entry already exists with the value: @value', array('@value' => $value)));
+        }
+//debug
+//        drupal_set_message('matches: '. print_r($match, TRUE));
+        $allmatch = isset($allmatch) ? array_intersect($allmatch, $match) : $match;
+      }
+//debug
+//      drupal_set_message('comp: '. $comp .' allmatch: '. print_r($allmatch, TRUE) .' count: '. count($allmatch));
+      if (is_array($allmatch) && in_array($node->nid, $allmatch)) {
+        $key = array_search($node->nid, $allmatch);
+        unset($allmatch[$key]);
+      }
+      if ($comp==UNIQUE_FIELD_COMP_ALL && is_array($allmatch) && count($allmatch)) {
+//debug
+//        drupal_set_message('all match failed');
+        foreach ($fields as $field) {
+          form_set_error($field, t('These fields must be unique in combination.'));
+        }
+      }
+    }
+  }
+}
+
+/** 
+ * Find nodes with a matching field value within a given scope.
+ */
+function unique_field_match_value($field, $value, $scope, $ntype = NULL) {
+  // generate query based on arguments
+  if ($field===UNIQUE_FIELD_FIELDS_TITLE) {
+    $qtbl = 'node';
+    $qcol = 'title';
+    $qval = "'". mysql_real_escape_string($value) ."'";
+    if ($scope==UNIQUE_FIELD_SCOPE_TYPE && is_string($ntype) && !empty($ntype)) {
+      $qwhere = "type = '". mysql_real_escape_string($ntype) ."'";
+    }
+  }
+  else {
+    $f = content_fields($field, $ntype);
+    $db = content_database_info($f);
+//debug
+//drupal_set_message(print_r($db, TRUE));
+    $qtbl = mysql_real_escape_string($db['table']);
+    $qcol = mysql_real_escape_string($db['columns']['value']['column']);
+    $dbtype = $db['columns']['value']['type'];
+    if ($dbtype=='char' || $dbtype=='varchar' || $dtype=='tinytext' || $dtype=='text' || $dtype=='mediumtext' || $dtype=='longtext') {
+      $qval = "'". mysql_real_escape_string($value) ."'";
+    }
+    else if (is_numeric($value)) {
+      $qval = mysql_real_escape_string($value);
+    }
+    else {
+      watchdog('unique_field', t('Could not formulate query for unique_field_match_value on @field with data type @dbtype.', array('@field' => $field, '@dbtype' => $dbtype)), WATCHDOG_WARNING);
+      return;
+    }
+    if ($scope==UNIQUE_FIELD_SCOPE_TYPE && is_string($ntype) && !empty($ntype)) {
+      $qjoin = "JOIN {node} ON {$qtbl}.nid = node.nid";
+      $qwhere = "type = '". mysql_real_escape_string($ntype) ."'";
+    }
+  }
+  
+  // do query
+  $q = "SELECT {$qtbl}.vid, {$qtbl}.nid FROM {". $qtbl ."} ";
+  if (!empty($qjoin)) {
+    $q .= $qjoin;
+  }
+  $q .= " WHERE ". $qcol ." = ". $qval;
+  if (!empty($qwhere)) {
+    $q .= ' AND '. $qwhere;
+  }
+//debug
+//  drupal_set_message($q);
+  $res = db_query($q);
+//debug
+//  drupal_set_message('matches found: '. db_num_rows($res));
+  $nids = array();
+  while ($obj = mysql_fetch_object($res)) {
+    $nids[] = $obj->nid;
+  }
+  return $nids;
+}
+
+/**
+ * Add the unique field settings form to content type forms (node_type_form).
+ */
+function unique_field_node_settings_form(&$form) {
+  // load fields for content type
+  $ntype = $form['#node_type']->type;
+  $ctype = content_types($ntype);
+  $fieldopts = array();
+  $fieldopts[UNIQUE_FIELD_FIELDS_TITLE] = t('Title');
+  if ($ctype && is_array($ctype['fields'])) {
+    foreach ($ctype['fields'] as $field => $info) {
+      $fieldopts[$field] = $info['widget']['label'] .' ('. $field .')';
+    }
+  }
+  
+  // build the form
+  $form['unique_field'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Unique field configuration'),
+    '#weight' => 0,
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['unique_field']['unique_field_scope'] = array(
+    '#type' => 'radios',
+    '#title' => t('Choose the scope for the unique values'),
+    '#options' => array(
+      UNIQUE_FIELD_SCOPE_TYPE => t('Content type'),
+      UNIQUE_FIELD_SCOPE_ALL => t('All nodes')
+    ),
+    '#default_value' => variable_get('unique_field_scope_'. $ntype, UNIQUE_FIELD_SCOPE_TYPE),
+    '#description' => t('Choose whether the values in the specified fields must be unique among nodes of this content type or among all nodes.'),
+  );
+  $form['unique_field']['unique_field_comp'] = array(
+    '#type' => 'radios',
+    '#title' => t('Choose whether values must be unique individually or in combination'),
+    '#options' => array(
+      UNIQUE_FIELD_COMP_EACH => t('Each of the specified fields must have a unique value.'),
+      UNIQUE_FIELD_COMP_ALL => t('The combination of values from the specified fields must be unique.'),
+    ),
+    '#default_value' => variable_get('unique_field_comp_'. $ntype, UNIQUE_FIELD_COMP_EACH),
+  );
+  $form['unique_field']['unique_field_fields'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Choose the fields that should be unique'),
+    '#options' => $fieldopts,
+    '#default_value' => variable_get('unique_field_fields_'. $ntype, array()),
+  );
+}
+

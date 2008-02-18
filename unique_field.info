@@ -1,0 +1,3 @@
+; $Id$
+name = Unique field
+description = "Allows requirement that node titles or CCK fields are unique."
