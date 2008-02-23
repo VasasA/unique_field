@@ -7,7 +7,7 @@
  * 
  * unique_field
  * by Joe Turgeon (http://arithmetric.com)
- * version 02/18/2008-2
+ * version 02/22/2008
  * licensed under GPL version 2
  */
 
@@ -118,13 +118,13 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL) {
       }
     }
     if ($scope==UNIQUE_FIELD_SCOPE_TYPE && is_string($ntype) && !empty($ntype)) {
-      $qjoin = "JOIN {node} ON {$qtbl}.nid = node.nid";
-      $qwhere .= "AND type = '". mysql_real_escape_string($ntype) ."'";
+      $qjoin = "JOIN {node} AS node ON {$qtbl}.nid = node.nid";
+      $qwhere .= "AND node.type = '". mysql_real_escape_string($ntype) ."'";
     }
   }
   
   // do query
-  $q = "SELECT DISTINCT({$qtbl}.nid) FROM {". $qtbl ."} ";
+  $q = "SELECT DISTINCT({$qtbl}.nid) FROM {". $qtbl ."} AS {$qtbl} ";
   if (!empty($qjoin)) {
     $q .= $qjoin;
   }

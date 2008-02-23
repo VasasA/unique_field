@@ -1,0 +1,10 @@
+/**
+ * Revisions log for unique_field
+ */
+
+version 02/22/2008
+-- fixed queries to support table prefixes
+
+version 02/18/2008
+-- initial release
+

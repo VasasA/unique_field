@@ -1,7 +1,7 @@
 /**
  * unique_field: Unique field module for Drupal
  * by Joe Turgeon (http://arithmetric.com)
- * version 02/18/2008
+ * version 02/22/2008
  * licensed under the GPL version 2
  */
 
