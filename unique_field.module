@@ -6,12 +6,14 @@
  * Allows requirement that node titles or CCK fields have unique values.
  * 
  * unique_field
- * by Joe Turgeon (http://arithmetric.com)
- * version 02/22/2008
- * licensed under GPL version 2
+ * 
+ * By Joe Turgeon [http://arithmetric.com]
+ * Version 2008/03/14
+ * Licensed under GPL version 2
  */
 
 define('UNIQUE_FIELD_PERM', 'designate fields as unique');
+define('UNIQUE_FIELD_SCOPE_NODE', 'node');
 define('UNIQUE_FIELD_SCOPE_TYPE', 'type');
 define('UNIQUE_FIELD_SCOPE_ALL', 'all');
 define('UNIQUE_FIELD_COMP_EACH', 'each');
@@ -38,38 +40,92 @@ function unique_field_form_alter($form_id, &$form) {
  * Implementation of hook_nodeapi()
  */
 function unique_field_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  // check fields for unique requirements on node 'validate' operation
   if ($op=='validate') {
+    
+    // get list of unique fields for node type
     $fields = variable_get('unique_field_fields_'. $node->type, array());
+    
+    // if there are unique fields for this node type
     if (count($fields)) {
+      
+      // get unique field settings for this node type
       $scope = variable_get('unique_field_scope_'. $node->type, UNIQUE_FIELD_SCOPE_TYPE);
       $comp = variable_get('unique_field_comp_'. $node->type, UNIQUE_FIELD_COMP_EACH);
+      $errmsg = NULL;
+      $errfld = array();
       $allmatch = NULL;
-      foreach ($fields as $field) {
-        if ($field==UNIQUE_FIELD_FIELDS_TITLE) {
-          $value = $node->title;
-        }
-        else {
-          $f = $node->$field;
-          $value = $f[0];
-        }
-        $match = unique_field_match_value($field, $value, $scope, $node->type);
-        // remove matches of this node
-        if ($node->nid && is_array($match) && in_array($node->nid, $match)) {
-          $key = array_search($node->nid, $match);
-          unset($match[$key]);
-        }
-        if ($comp==UNIQUE_FIELD_COMP_EACH && is_array($match) && count($match)) {
-          form_set_error($field, t('This field requires a unique value, and the specified value is already used.'));
-        }
-//debug
-//        drupal_set_message('matches: '. print_r($match, TRUE));
-        $allmatch = isset($allmatch) ? array_intersect($allmatch, $match) : $match;
-      }
-//debug
-//      drupal_set_message('comp: '. $comp .' allmatch: '. print_r($allmatch, TRUE) .' count: '. count($allmatch));
-      if ($comp==UNIQUE_FIELD_COMP_ALL && is_array($allmatch) && count($allmatch)) {
+      
+      // check fields for node scope
+      if ($scope==UNIQUE_FIELD_SCOPE_NODE) {
+        $values = array();
         foreach ($fields as $field) {
-          form_set_error($field, t('These fields must be unique in combination.'));
+          if ($field==UNIQUE_FIELD_FIELDS_TITLE) {
+            $value = $node->title;
+          }
+          else {
+            $f = $node->$field;
+            // fix for node and user reference fields
+            if ((isset($f[0]['nid']) || isset($f[0]['uid'])) && !empty($f[0]['error_field'])) {
+              unset($f[0]['error_field']);
+            }
+            $value = serialize($f[0]);
+          }
+          if (in_array($value, $values)) {
+            $errfld[] = $field;
+          }
+          $values[] = $value;
+        }
+        if (count($errfld)>0) {
+          $errmsg = 'The @labels fields must have unique values. The @label field has a value that is already used.';
+        }
+      }
+      // check fields for other scopes
+      else {
+        foreach ($fields as $field) {
+          if ($field==UNIQUE_FIELD_FIELDS_TITLE) {
+            $value = $node->title;
+          }
+          else {
+            $f = $node->$field;
+            $value = $f[0];
+          }
+          $match = unique_field_match_value($field, $value, $scope, $node->type);
+          // remove matches of this node
+          if ($node->nid && is_array($match) && in_array($node->nid, $match)) {
+            $key = array_search($node->nid, $match);
+            unset($match[$key]);
+          }
+          if ($comp==UNIQUE_FIELD_COMP_EACH && is_array($match) && count($match)) {
+            $errfld[] = $field;
+            $errmsg = 'The @label field requires a unique value, and the specified value is already used.';
+          }
+          $allmatch = isset($allmatch) ? array_intersect($allmatch, $match) : $match;
+        }
+        
+        // check for fields in combination
+        if ($comp==UNIQUE_FIELD_COMP_ALL && is_array($allmatch) && count($allmatch)) {
+          foreach ($fields as $field) {
+            $errfld[] = $field;
+          }
+          $errmsg = 'This form requires that the fields @labels are a unique combination. The specified values are already used.';
+        }
+      }
+
+      // common error messages
+      if ($errmsg && strlen($errmsg)>0 && is_array($errfld) && count($errfld)>0) {
+        $labels = array();
+        foreach ($fields as $field) {
+          if ($field==UNIQUE_FIELD_FIELDS_TITLE) {
+            $labels[$field] = t('Title');
+          }
+          else {
+            $fld = content_fields($field, $node->type);
+            $labels[$field] = $fld['widget']['label'];
+          }
+        }
+        foreach ($errfld as $field) {
+          form_set_error($field, t($errmsg, array('@label' => $labels[$field], '@labels' => join(', ', $labels))));
         }
       }
     }
@@ -80,23 +136,31 @@ function unique_field_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
  * Find nodes with a matching field value within a given scope.
  */
 function unique_field_match_value($field, $values, $scope, $ntype = NULL) {
-  // generate query based on arguments
+  // generate query if field is title
   if ($field===UNIQUE_FIELD_FIELDS_TITLE) {
     $qtbl = 'node';
     $qwhere = "title = '". mysql_real_escape_string($values) ."' ";
+    // add constraint for content type query
     if ($scope==UNIQUE_FIELD_SCOPE_TYPE && is_string($ntype) && !empty($ntype)) {
-      $qwhere .= "AND type = '". mysql_real_escape_string($ntype) ."' ";
+      $qwhere .= "AND type = '". mysql_real_escape_string($ntype) ."'";
     }
   }
+
+  // generate query if field is CCK field
   else {
     $f = content_fields($field, $ntype);
     $db = content_database_info($f);
-//debug
-//drupal_set_message('field: '. $field .' value: '. print_r($values, TRUE) .' db: '. print_r($db, TRUE));
     $qtbl = mysql_real_escape_string($db['table']);
     $qwhere = '';
+    
+    // check all values in field
     foreach ($values as $key => $val) {
+      // skip values that aren't stored in the database
       if (!isset($db['columns'][$key]['column'])) {
+        continue;
+      }
+      // skip values that are null or empty
+      if (is_null($val) || empty($val)) {
         continue;
       }
       if (strlen($qwhere)>0) {
@@ -117,6 +181,13 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL) {
         return;
       }
     }
+    
+    // if no where terms have been found, return no matches
+    if (empty($qwhere)) {
+      return array();
+    }
+    
+    // add constraint for content type query
     if ($scope==UNIQUE_FIELD_SCOPE_TYPE && is_string($ntype) && !empty($ntype)) {
       $qjoin = "JOIN {node} AS node ON {$qtbl}.nid = node.nid";
       $qwhere .= "AND node.type = '". mysql_real_escape_string($ntype) ."'";
@@ -129,11 +200,7 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL) {
     $q .= $qjoin;
   }
   $q .= " WHERE ". $qwhere;
-//debug
-//  drupal_set_message($q);
   $res = db_query($q);
-//debug
-//  drupal_set_message('matches found: '. db_num_rows($res));
   $nids = array();
   while ($obj = mysql_fetch_object($res)) {
     $nids[] = $obj->nid;
@@ -169,10 +236,11 @@ function unique_field_node_settings_form(&$form) {
     '#title' => t('Choose the scope for the unique values'),
     '#options' => array(
       UNIQUE_FIELD_SCOPE_TYPE => t('Content type'),
-      UNIQUE_FIELD_SCOPE_ALL => t('All nodes')
+      UNIQUE_FIELD_SCOPE_ALL => t('All nodes'),
+      UNIQUE_FIELD_SCOPE_NODE => t('Single node only')
     ),
     '#default_value' => variable_get('unique_field_scope_'. $ntype, UNIQUE_FIELD_SCOPE_TYPE),
-    '#description' => t('Choose whether the values in the specified fields must be unique among nodes of this content type or among all nodes.'),
+    '#description' => t('Choose whether the values in the specified fields must be unique among nodes of this content type, among all nodes, or only among the fields of the present node.'),
   );
   $form['unique_field']['unique_field_comp'] = array(
     '#type' => 'radios',
@@ -189,5 +257,17 @@ function unique_field_node_settings_form(&$form) {
     '#options' => $fieldopts,
     '#default_value' => variable_get('unique_field_fields_'. $ntype, array()),
   );
+  
+  // add validation function
+  $form['#validate']['unique_field_node_settings_form_validate'] = array();
+}
+
+/**
+ * Form validation callback for unique_field_node_settings_form
+ */
+function unique_field_node_settings_form_validate($form_id, $form_values) {
+  if ($form_values['unique_field_scope']==UNIQUE_FIELD_SCOPE_NODE && $form_values['unique_field_comp']==UNIQUE_FIELD_COMP_ALL) {
+    form_set_error('unique_field_comp', t('The scope of a single node requires that each field must be unique.'));
+  }
 }
 

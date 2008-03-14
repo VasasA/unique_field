@@ -2,9 +2,24 @@
  * Revisions log for unique_field
  */
 
-version 02/22/2008
+version 2008/03/14
+-- changed behavior so that if a field value is null or empty it matches
+  no other node (including other nodes with null or empty values)
+  [thanks to scedwar]
+
+version 2008/03/13
+-- fixed support for node and user reference fields in single node scope,
+  verified support for both in other scopes
+
+version 2008/03/12
+-- added single node scope to require that specified fields on a node
+  have unique values
+-- improved error messages to specify which fields must be unique
+  and which include duplicates
+
+version 2008/02/22
 -- fixed queries to support table prefixes
 
-version 02/18/2008
+version 2008/02/18
 -- initial release
 
