@@ -8,7 +8,7 @@
  * unique_field
  * 
  * By Joe Turgeon [http://arithmetric.com]
- * Version 2008/03/14
+ * Version 2008/03/15
  * Licensed under GPL version 2
  */
 
@@ -117,7 +117,8 @@ function unique_field_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
         $labels = array();
         foreach ($fields as $field) {
           if ($field==UNIQUE_FIELD_FIELDS_TITLE) {
-            $labels[$field] = t('Title');
+            $nodetype = node_get_types('type', $node->type);
+            $labels[$field] = $nodetype->title_label;
           }
           else {
             $fld = content_fields($field, $node->type);
@@ -214,9 +215,10 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL) {
 function unique_field_node_settings_form(&$form) {
   // load fields for content type
   $ntype = $form['#node_type']->type;
+  $nodetype = node_get_types('type', $ntype);
   $ctype = content_types($ntype);
   $fieldopts = array();
-  $fieldopts[UNIQUE_FIELD_FIELDS_TITLE] = t('Title');
+  $fieldopts[UNIQUE_FIELD_FIELDS_TITLE] = $nodetype->title_label .' ('. t('title') .')';
   if ($ctype && is_array($ctype['fields'])) {
     foreach ($ctype['fields'] as $field => $info) {
       $fieldopts[$field] = $info['widget']['label'] .' ('. $field .')';

@@ -2,6 +2,9 @@
  * Revisions log for unique_field
  */
 
+version 2008/03/15
+-- fixed to use node title label from node type data [thanks to tj2653]
+
 version 2008/03/14
 -- changed behavior so that if a field value is null or empty it matches
   no other node (including other nodes with null or empty values)

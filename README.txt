@@ -2,7 +2,7 @@
  * unique_field: Unique field module for Drupal
  *
  * By Joe Turgeon [http://arithmetric.com]
- * Version 2008/03/14
+ * Version 2008/03/15
  * Licensed under the GPL version 2
  */
 
@@ -40,7 +40,7 @@ Thanks to fago and his excellent auto_nodetitle module.
 
 This module's development has been sponsored by:
 -- Sundays Energy [http://sundaysenergy.com]
--- Ice Link Design [http://icelinkdesign.net]
+-- Icelink Design [http://icelinkdesign.net]
 
 Please send comments and suggestions to Joe Turgeon (detour) at
 arithmetric @ gmail.com
