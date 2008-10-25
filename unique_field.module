@@ -8,7 +8,7 @@
  * unique_field
  * 
  * By Joe Turgeon [http://arithmetric.com]
- * Version 2008/03/15
+ * Version 2008/10/24
  * Licensed under GPL version 2
  */
 
@@ -140,10 +140,10 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL) {
   // generate query if field is title
   if ($field===UNIQUE_FIELD_FIELDS_TITLE) {
     $qtbl = 'node';
-    $qwhere = "title = '". mysql_real_escape_string($values) ."' ";
+    $qwhere = "title = '". db_escape_string($values) ."' ";
     // add constraint for content type query
     if ($scope==UNIQUE_FIELD_SCOPE_TYPE && is_string($ntype) && !empty($ntype)) {
-      $qwhere .= "AND type = '". mysql_real_escape_string($ntype) ."'";
+      $qwhere .= "AND type = '". db_escape_string($ntype) ."'";
     }
   }
 
@@ -151,7 +151,7 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL) {
   else {
     $f = content_fields($field, $ntype);
     $db = content_database_info($f);
-    $qtbl = mysql_real_escape_string($db['table']);
+    $qtbl = db_escape_string($db['table']);
     $qwhere = '';
     
     // check all values in field
@@ -167,13 +167,13 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL) {
       if (strlen($qwhere)>0) {
         $qwhere .= 'AND ';
       }
-      $qwhere .= mysql_real_escape_string($db['columns'][$key]['column']) .' = ';
+      $qwhere .= db_escape_string($db['columns'][$key]['column']) .' = ';
       $dbtype = $db['columns'][$key]['type'];
       if ($dbtype=='char' || $dbtype=='varchar' || $dbtype=='tinytext' || $dbtype=='text' || $dbtype=='mediumtext' || $dbtype=='longtext') {
-        $qwhere .= "'". mysql_real_escape_string($val) ."' ";
+        $qwhere .= "'". db_escape_string($val) ."' ";
       }
       else if (is_numeric($val)) {
-        $qwhere .= mysql_real_escape_string($val) ." ";
+        $qwhere .= db_escape_string($val) ." ";
       }
       else {
         $msg = t('Could not formulate query for unique_field_match_value on @field with data type @dbtype.', array('@field' => $field, '@dbtype' => $dbtype));
@@ -191,7 +191,7 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL) {
     // add constraint for content type query
     if ($scope==UNIQUE_FIELD_SCOPE_TYPE && is_string($ntype) && !empty($ntype)) {
       $qjoin = "JOIN {node} AS node ON {$qtbl}.nid = node.nid";
-      $qwhere .= "AND node.type = '". mysql_real_escape_string($ntype) ."'";
+      $qwhere .= "AND node.type = '". db_escape_string($ntype) ."'";
     }
   }
   
@@ -203,8 +203,10 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL) {
   $q .= " WHERE ". $qwhere;
   $res = db_query($q);
   $nids = array();
-  while ($obj = mysql_fetch_object($res)) {
-    $nids[] = $obj->nid;
+  while ($obj = db_fetch_object($res)) {
+    if ($obj && $obj->nid) {
+      $nids[] = $obj->nid;
+    }
   }
   return $nids;
 }
@@ -216,12 +218,14 @@ function unique_field_node_settings_form(&$form) {
   // load fields for content type
   $ntype = $form['#node_type']->type;
   $nodetype = node_get_types('type', $ntype);
-  $ctype = content_types($ntype);
   $fieldopts = array();
   $fieldopts[UNIQUE_FIELD_FIELDS_TITLE] = $nodetype->title_label .' ('. t('title') .')';
-  if ($ctype && is_array($ctype['fields'])) {
-    foreach ($ctype['fields'] as $field => $info) {
-      $fieldopts[$field] = $info['widget']['label'] .' ('. $field .')';
+  if (module_exists('content')) {
+    $ctype = content_types($ntype);
+    if ($ctype && is_array($ctype['fields'])) {
+      foreach ($ctype['fields'] as $field => $info) {
+        $fieldopts[$field] = $info['widget']['label'] .' ('. $field .')';
+      }
     }
   }
   

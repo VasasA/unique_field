@@ -2,6 +2,10 @@
  * Revisions log for unique_field
  */
 
+version 2008/10/24
+-- added check for content.module for CCK-dependent code [thanks to sigsby]
+-- removed all MySQL database-specific code [thanks to rssaddict]
+
 version 2008/03/15
 -- fixed to use node title label from node type data [thanks to tj2653]
 
