@@ -3,6 +3,7 @@
  */
 
 version 2008/10/24
+-- updated to compatibility with Drupal 6.x [thanks to Yur]
 -- added check for content.module for CCK-dependent code [thanks to sigsby]
 -- removed all MySQL database-specific code [thanks to rssaddict]
 

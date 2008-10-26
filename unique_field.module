@@ -5,7 +5,8 @@
  * @file
  * Allows requirement that node titles or CCK fields have unique values.
  * 
- * unique_field
+ * Unique field module
+ * Compatible with Drupal 6.x
  * 
  * By Joe Turgeon [http://arithmetric.com]
  * Version 2008/10/24
@@ -30,8 +31,8 @@ function unique_field_perm() {
 /**
  * Implementation of hook_form_alter()
  */
-function unique_field_form_alter($form_id, &$form) {
-  if (user_access(UNIQUE_FIELD_PERM) && $form_id=='node_type_form' && isset($form['#node_type'])) {
+function unique_field_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'node_type_form' && user_access(UNIQUE_FIELD_PERM) && isset($form['#node_type'])) {
     unique_field_node_settings_form($form);
   }
 }
@@ -265,14 +266,14 @@ function unique_field_node_settings_form(&$form) {
   );
   
   // add validation function
-  $form['#validate']['unique_field_node_settings_form_validate'] = array();
+  $form['#validate'][] = 'unique_field_node_settings_form_validate';
 }
 
 /**
  * Form validation callback for unique_field_node_settings_form
  */
-function unique_field_node_settings_form_validate($form_id, $form_values) {
-  if ($form_values['unique_field_scope']==UNIQUE_FIELD_SCOPE_NODE && $form_values['unique_field_comp']==UNIQUE_FIELD_COMP_ALL) {
+function unique_field_node_settings_form_validate($form, &$form_state) {
+  if ($form_state['values']['unique_field_scope']==UNIQUE_FIELD_SCOPE_NODE && $form_state['values']['unique_field_comp']==UNIQUE_FIELD_COMP_ALL) {
     form_set_error('unique_field_comp', t('The scope of a single node requires that each field must be unique.'));
   }
 }

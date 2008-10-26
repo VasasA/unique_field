@@ -1,3 +1,4 @@
 ; $Id$
 name = Unique field
 description = "Provides node validation requirement that the title or CCK fields are unique."
+core = 6.x
