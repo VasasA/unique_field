@@ -1,4 +1,6 @@
 ; $Id$
 name = Unique field
-description = "Provides node validation requirement that the title or CCK fields are unique."
-core = 6.x
+description = "Provides content validation requirement that the node's author, language, or content fields are unique."
+core = 7.x
+files[] = unique_field.module
+files[] = unique_field.install
