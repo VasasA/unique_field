@@ -3,13 +3,13 @@
  * Compatible with Drupal 7.x
  *
  * By Joe Turgeon [http://arithmetric.com]
- * Version 2009/11/17
+ * Version 2009/01/20
  * Licensed under the GPL version 2
  */
 
 The unique field module provides a way to require that specified fields
 or characteristics of a node are unique. This includes the node's title,
-author, language, and any CCK field.
+author, language, taxonomy terms, and other fields.
 
 Without this module, Drupal and CCK do not prevent multiple nodes from
 having the same title or the same value in a given field.

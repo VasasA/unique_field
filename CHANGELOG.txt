@@ -2,6 +2,13 @@
  * Revisions log for unique_field
  */
 
+version 2010/01/20
+-- validation is skipped when a node is deleted (otherwise nodes
+  with duplicate values are prevented from being deleted)
+-- fixed translatability of all strings
+-- added documentation through help hook
+-- fixed compatibility with Drupal 7.0 alpha 1
+
 version 2009/11/17
 -- initial release of Drupal 7.x compatible version
 
