@@ -2,6 +2,9 @@
  * Revisions log for unique_field
  */
 
+version 2010/08/04
+-- fixed restriction bypass JavaScript for Drupal 7 compatibility
+
 version 2010/01/20
 -- validation is skipped when a node is deleted (otherwise nodes
   with duplicate values are prevented from being deleted)

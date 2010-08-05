@@ -10,7 +10,7 @@
  * Compatible with Drupal 7.x
  *
  * By Joe Turgeon [http://arithmetric.com]
- * Version 2010/01/20
+ * Version 2010/08/04
  * Licensed under GPL version 2
  */
 
@@ -233,7 +233,8 @@ function unique_field_node_validate($node, $form) {
           $msg .= ' ' . t('Matches are found in the following content: !list-html', array('!list-html' => $list_html));
         }
         if (user_access('unique_field_perm_bypass')) {
-          $msg .= '<p>' . t('Click !here to bypass this check and resubmit.', array('!here' => "<a href=\"#\" onclick=\"jQuery('form#node-form input#edit-unique-field-override').val(1);jQuery('form#node-form').submit();\">" . t('here') . '</a>')) . '</p>';
+          $form_id = str_replace('_', '-', $form['#id']);
+          $msg .= '<p>' . t('Click !here to bypass this check and resubmit.', array('!here' => "<a href=\"#\" onclick=\"jQuery('form#" . $form_id . " input#edit-unique-field-override').val(1);jQuery('form#" . $form_id . "').submit();\">" . t('here') . '</a>')) . '</p>';
         }
         form_set_error($field, $msg);
         // if checking the fields in combination, then one error message

@@ -3,7 +3,7 @@
  * Compatible with Drupal 7.x
  *
  * By Joe Turgeon [http://arithmetric.com]
- * Version 2009/01/20
+ * Version 2010/08/04
  * Licensed under the GPL version 2
  */
 
