@@ -1,9 +1,9 @@
 /**
- * unique_field: Unique field module for Drupal
+ * Unique field module for Drupal (unique_field)
  * Compatible with Drupal 7.x
  *
  * By Joe Turgeon [http://arithmetric.com]
- * Version 2010/08/04
+ * Version 2010/11/20
  * Licensed under the GPL version 2
  */
 
@@ -18,8 +18,9 @@ For example, if you have a content type with a Date field and there
 should only be one node per date, you could use this module to prevent a
 node from being saved with a date already used in another node.
 
-This module adds additional options to the content type administration page
-for specifying which fields must be unique. The administrator may specify
+This module adds additional options to the administration page for each
+content type (i.e. admin/structure/types/manage/<content type>) for
+specifying which fields must be unique. The administrator may specify
 whether each field must be unique or whether the fields in combination must
 be unique. Also, the administrator can choose whether the fields must be
 unique among all other nodes or only among nodes from the given node's

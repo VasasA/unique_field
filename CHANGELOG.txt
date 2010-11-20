@@ -2,6 +2,13 @@
  * Revisions log for unique_field
  */
 
+version 2010/11/20 (7.x-1.0-beta1)
+-- #945482 by Scott Falconer: fixing PDOException on empty values in
+  multi-value fields
+-- #970548: fixing undefined index warning
+-- fixing JavaScript bypass for compatibility with Drupal 7 updates
+-- other code improvements
+
 version 2010/08/04
 -- fixed restriction bypass JavaScript for Drupal 7 compatibility
 
@@ -76,13 +83,3 @@ version 2008/02/22
 
 version 2008/02/18
 -- initial release
-
-TO-DO
--- add SimpleTest test
--- fix use of t() to eliminate the use of variables inside
--- fix consistent case-sensitivity of database queries, add option
-  for whether to use case-sensitive comparisons (see #333137)
--- add validation before submission via AJAX (see #338744)
--- add taxonomy vocabulary/term as query field and scope (see #227254)
--- add views as a query scope (see #223792)
--- allow multiple types of constraints (see #347327)
