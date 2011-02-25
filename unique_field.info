@@ -1,4 +1,3 @@
-; $Id$
 name = Unique field
 description = "Provides content validation requirement that a node's author, language, taxonomy terms, or other fields are unique."
 core = 7.x
