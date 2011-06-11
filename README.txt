@@ -3,8 +3,6 @@
  * Compatible with Drupal 7.x
  *
  * By Joe Turgeon [http://arithmetric.com]
- * Version 2010/11/20
- * Licensed under the GPL version 2
  */
 
 The unique field module provides a way to require that specified fields

@@ -9,8 +9,6 @@
  * Compatible with Drupal 7.x
  *
  * By Joe Turgeon [http://arithmetric.com]
- * Version 2010/11/20
- * Licensed under GPL version 2
  */
 
 // query scope definitions
@@ -109,21 +107,20 @@ function unique_field_node_validate($node, $form) {
           $new_values[] = $node->title;
         }
         else {
-          // if content_permissions is enabled and the current user is
-          // not permitted to access a field, then the field data is cleared
-          if (!is_array($node->$field)) {
+          // Ensure that the field content exists. For example, if field
+          // permissions are enabled, the field may be missing for some users.
+          if (!isset($node->{$field}[$node->language]) || !is_array($node->{$field}[$node->language])) {
             continue;
           }
-          $f = $node->$field;
-          $f = $f[LANGUAGE_NONE];
+          $fvalues = $node->{$field}[$node->language];
           $field_info = field_info_field($field);
           $field_keys = array_keys($field_info['columns']);
-          foreach ($f as $index => $value) {
+          foreach ($fvalues as $index => $value) {
             if (is_numeric($index)) {
               $field_combined = array();
               foreach ($field_keys as $key) {
-                if (isset($f[$index][$key]) && !empty($f[$index][$key])) {
-                  $field_combined[$key] = $f[$index][$key];
+                if (isset($fvalues[$index][$key]) && !empty($fvalues[$index][$key])) {
+                  $field_combined[$key] = $fvalues[$index][$key];
                 }
               }
               if (!empty($field_combined)) {
@@ -157,20 +154,19 @@ function unique_field_node_validate($node, $form) {
           $values = $node->language;
         }
         else {
-          // if content_permissions is enabled and the current user is
-          // not permitted to access a field, then the field data is cleared
-          if (!is_array($node->$field)) {
+          // Ensure that the field content exists. For example, if field
+          // permissions are enabled, the field may be missing for some users.
+          if (!isset($node->{$field}[$node->language]) || !is_array($node->{$field}[$node->language])) {
             continue;
           }
-          $f = $node->$field;
-          $values = $f[LANGUAGE_NONE];
-          foreach ($values as $index => $value) {
+          $fvalues = $node->{$field}[$node->language];
+          foreach ($fvalues as $index => $value) {
             if (!is_numeric($index) || !is_array($value)) {
-              unset($values[$index]);
+              unset($fvalues[$index]);
             }
           }
           $field_info = field_info_field($field);
-          $values = _field_filter_items($field_info, $values);
+          $values = _field_filter_items($field_info, $fvalues);
         }
         if (empty($values)) {
           continue;

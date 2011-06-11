@@ -2,6 +2,9 @@
  * Revisions log for unique_field
  */
 
+version 2011/06/11 (7.x-1.0-beta2)
+-- #1037904 by Boobaa: fixing compatibility with localized content
+
 version 2010/11/20 (7.x-1.0-beta1)
 -- #945482 by Scott Falconer: fixing PDOException on empty values in
   multi-value fields
