@@ -5,7 +5,7 @@
  * Provides content validation requirement that a node's author,
  * language, taxonomy terms, or other fields are unique.
  *
- * Unique field module
+ * Unique Field module
  * Compatible with Drupal 7.x
  *
  * By Joe Turgeon [http://arithmetric.com]
@@ -35,13 +35,13 @@ define('UNIQUE_FIELD_SHOW_MATCHES', 'show_matches');
 function unique_field_help($path, $arg) {
   switch ($path) {
     case 'admin/help#unique_field':
-      $output = '<p>' . t("The Unique Field module allows administrators to require that content supplied for specified fields is unique. For example, you may require that each node has a unique title or a different author. For configuration options, please see the <em>Unique field restrictions</em> section of a content type's administration page.") . '</p>';
+      $output = '<p>' . t("The Unique Field module allows administrators to require that content supplied for specified fields is unique. For example, you may require that each node has a unique title or a different author. For configuration options, please see the <em>Unique Field restrictions</em> section of a content type's administration page.") . '</p>';
       return $output;
   }
 }
 
 /**
- * Implement hook_permission().
+ * Implements hook_permission().
  */
 function unique_field_permission() {
   return array(
@@ -57,7 +57,7 @@ function unique_field_permission() {
 }
 
 /**
- * Implement hook_form_alter().
+ * Implements hook_form_alter().
  */
 function unique_field_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id === 'node_type_form' && user_access('unique_field_perm_admin') && isset($form['#node_type'])) {
@@ -72,7 +72,7 @@ function unique_field_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
- * Implement hook_node_validate().
+ * Implements hook_node_validate().
  */
 function unique_field_node_validate($node, $form) {
   // skip validation if deleting a node or if override value is set
@@ -351,7 +351,7 @@ function unique_field_node_settings_form(&$form) {
   // build the form
   $form['unique_field'] = array(
     '#type' => 'fieldset',
-    '#title' => t('Unique field restrictions'),
+    '#title' => t('Unique Field restrictions'),
     '#weight' => 1,
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
