@@ -19,7 +19,7 @@ class UniqueFieldTestCase extends DrupalWebTestCase {
   public function setUp() {
     parent::setUp('field', 'field_ui', 'number', 'text', 'unique_field');
 
-    // TODO: add tests for other types of fields: date, file, link, node
+    // TODO: add tests for other types of fields: date, file, link, number, node
     // reference, user reference, etc.
 
     // Create and log in our privileged user.
@@ -32,7 +32,7 @@ class UniqueFieldTestCase extends DrupalWebTestCase {
   /**
    * Test the unique requirement on the title field in the content type scope.
    */
-  public function testUniqueTitle() {
+  public function testUniqueCtypeTitle() {
     // Create a content type with the title set to be unique
     $edit = array();
     $edit['name'] = 'Unique Title';
@@ -61,9 +61,50 @@ class UniqueFieldTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Test the unique requirement on the title field in the all scope.
+   */
+  public function testUniqueAllTitle() {
+    // Create a content type with the title set to be unique
+    $edit = array();
+    $edit['name'] = 'Unique Title';
+    $edit['type'] = 'uf_title';
+    $edit['unique_field_fields[title]'] = 'title';
+    $edit['unique_field_scope'] = UNIQUE_FIELD_SCOPE_ALL;
+    $this->drupalPost('admin/structure/types/add', $edit, t('Save content type'));
+    $this->assertText('The content type Unique Title has been added.', 'Content type added.');
+
+    // Create another content type with the title set to be unique
+    $edit = array();
+    $edit['name'] = 'Unique Title 2';
+    $edit['type'] = 'uf_title2';
+    $edit['unique_field_fields[title]'] = 'title';
+    $edit['unique_field_scope'] = UNIQUE_FIELD_SCOPE_ALL;
+    $this->drupalPost('admin/structure/types/add', $edit, t('Save content type'));
+    $this->assertText('The content type Unique Title 2 has been added.', 'Content type added.');
+
+    // Attempt to create 2 nodes with the same title in different content types
+    $title = $this->randomName(24);
+    $edit = array();
+    $edit['title'] = $title;
+    $edit['body[und][0][value]'] = $this->randomName(48);
+    $this->drupalPost('node/add/uf-title', $edit, t('Save'));
+    $this->assertText($edit['body[und][0][value]'], 'Unique Title (uf_title) node has been created');
+    $edit['body[und][0][value]'] = $this->randomName(48);
+    $this->drupalPost('node/add/uf-title2', $edit, t('Save'));
+    $this->assertText('The Title field requires a unique value, and the specified value is already used', 'Unique Title (uf_title) node with duplicate content could not be created');
+
+    // Check for false negative: Attempt to create a node with a unique title
+    $edit = array();
+    $edit['title'] = $this->randomName(24);
+    $edit['body[und][0][value]'] = $this->randomName(48);
+    $this->drupalPost('node/add/uf-title2', $edit, t('Save'));
+    $this->assertText($edit['body[und][0][value]'], 'Unique Title (uf_title) node has been created');
+  }
+
+  /**
    * Test the unique requirement on the node author in the content type scope.
    */
-  public function testUniqueAuthor() {
+  public function testUniqueCtypeAuthor() {
     // Create a content type with the author set to be unique
     $edit = array();
     $edit['name'] = 'Unique Author';
