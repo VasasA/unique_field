@@ -2,8 +2,8 @@
  * Revisions log for unique_field
  */
 
-version X
--- adding unit tests for core functionality
+version 7.x-1.x
+-- #1185902: adding functional tests for core functionality
 
 version 2011/06/11 (7.x-1.0-beta2)
 -- #1037904 by Boobaa: fixing compatibility with localized content
