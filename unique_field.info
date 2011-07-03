@@ -3,4 +3,4 @@ description = "Provides content validation requirement that a node's author, lan
 core = 7.x
 files[] = unique_field.module
 files[] = unique_field.install
-files[] = unique_field.test
+files[] = tests/core.test
