@@ -4,3 +4,4 @@ core = 7.x
 files[] = unique_field.module
 files[] = unique_field.install
 files[] = tests/core.test
+files[] = tests/references.test

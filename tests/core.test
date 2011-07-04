@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Functional tests for the Unique Field module with Drupal core fields.
+ * Functional tests for the Unique Field module with Drupal core field types.
  *
  * The basic model for the tests:
  *
