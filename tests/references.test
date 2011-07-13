@@ -232,7 +232,7 @@ class UniqueFieldReferencesTestCase extends DrupalWebTestCase {
     $edit['field_uf_node_single_node_1[und]'] = 1;
     $edit['field_uf_node_single_node_2[und]'] = 2;
     $this->drupalPost('node/add/uf-node-single', $edit, t('Save'));
-    $this->assertText($edit['body[und][0][value]'], 'Unique Text Single (uf_text_single) node has been created');
+    $this->assertText($edit['body[und][0][value]'], 'Unique Node Single (uf_node_single) node has been created');
   }
 
 }
