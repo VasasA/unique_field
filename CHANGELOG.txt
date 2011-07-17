@@ -3,6 +3,7 @@
  */
 
 version 7.x-1.x
+-- #1185904: reworking query code to use EntityFieldQuery
 -- #1185902: adding functional tests for core functionality
 
 version 2011/06/11 (7.x-1.0-beta2)

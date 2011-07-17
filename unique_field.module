@@ -246,83 +246,62 @@ function unique_field_node_validate($node, $form) {
  * Find nodes with a matching field value within a given scope.
  */
 function unique_field_match_value($field, $values, $scope, $ntype = NULL, $nlanguage = NULL) {
-  // initialize query variables
-  $qtbl = NULL;
-  $qwhere = db_and();
+  // Initialize EntityFieldQuery
+  $entity_type = 'node';
+  $efq = new EntityFieldQuery();
+  $efq->entityCondition('entity_type', $entity_type);
 
-  // generate query where clause for title field
+  // Add query conditions depending on the type of field
   if ($field === UNIQUE_FIELD_FIELDS_TITLE) {
-    $qwhere->condition('node.title', $values);
+    // Query condition for bundle title property
+    $efq->propertyCondition('title', $values);
   }
-
-  // generate query where clause for author field
   elseif ($field === UNIQUE_FIELD_FIELDS_AUTHOR) {
-    $qwhere->condition('node.uid', $values);
+    // Query condition for bundle author property
+    $efq->propertyCondition('uid', $values);
   }
-
-  // generate query where clause for language field
   elseif ($field === UNIQUE_FIELD_FIELDS_LANGUAGE) {
-    $qwhere->condition('node.language', $values);
+    // Query condition for bundle language property
+    $efq->propertyCondition('language', $values);
   }
-
-  // generate query where clause for a CCK field
   else {
-    $f = field_info_field($field);
-    $qtbl = 'field_data_' . $field;
-    $qfwhere = db_or();
-    $queriable = FALSE;
-
-    // check all entries in the field
+    // Query condition for other fields
+    $field_info = field_info_field($field);
+    // Check all items/values
     foreach ($values as $index => $value) {
-      $qwhere_val = db_and();
-      // check all fields/columns in the entry
+      // Check all columns
       foreach ($value as $key => $val) {
-        // skip values that are not stored in the database
-        if (!isset($f['columns'][$key]) || !is_array($f['columns'][$key])) {
+        // Skip values that are not stored in the database
+        if (!isset($field_info['columns'][$key]) || !is_array($field_info['columns'][$key])) {
           continue;
         }
-        // skip if the value is an empty string or is not a scalar
+        // Skip if the value is an empty string or is not a scalar
         if (!strlen($val) || !is_scalar($val)) {
           continue;
         }
-        // generate comparison statement depending on field type
-        $dbfield = $qtbl . '.' . $field . '_' . $key;
-        $qwhere_val->condition($dbfield, $val);
-        $queriable = TRUE;
+        $efq->fieldCondition($field, $key, $val);
       }
-      $qfwhere->condition($qwhere_val);
     }
-
-    // if no values can be queried, then return no matches
-    if (!$queriable) {
-      return array();
-    }
-
-    $qwhere->condition($qfwhere);
   }
 
-  // add query where clause if scope is limited to content type
-  if ($scope === UNIQUE_FIELD_SCOPE_TYPE && is_string($ntype) && !empty($ntype)) {
-    $qwhere->condition('node.type', $ntype);
+  // Add query conditions for the scope setting
+  if ($scope === UNIQUE_FIELD_SCOPE_TYPE && !empty($ntype)) {
+    // Query condition for the bundle (content type) scope
+    $efq->entityCondition('bundle', $ntype);
+  }
+  elseif ($scope === UNIQUE_FIELD_SCOPE_LANGUAGE && !empty($nlanguage)) {
+    // Query condition for the language scope
+    $efq->propertyCondition('language', $nlanguage);
   }
 
-  // add query where clause if scope is limited to same language
-  elseif ($scope === UNIQUE_FIELD_SCOPE_LANGUAGE && is_string($nlanguage)) {
-    $qwhere->condition('node.language', $nlanguage);
-  }
-
-  // do query
-  $query = db_select('node');
-  $query->addField('node', 'nid');
-  if (!empty($qtbl)) {
-    $onclause = 'node.vid = ' . $qtbl . '.revision_id';
-    $query->join($qtbl, $qtbl, $onclause);
-  }
-  $result = $query->condition($qwhere)->execute()->fetchAll();
+  // Execute query and collect results
+  $result = $efq->execute();
   $nids = array();
-  foreach ($result as $obj) {
-    if ($obj && $obj->nid) {
-      $nids[] = $obj->nid;
+  if (isset($result[$entity_type]) && is_array($result[$entity_type])) {
+    foreach ($result[$entity_type] as $item) {
+      if (!empty($item->nid)) {
+        $nids[] = $item->nid;
+      }
     }
   }
   return array_unique($nids);
