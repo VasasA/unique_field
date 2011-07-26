@@ -109,10 +109,11 @@ function unique_field_node_validate($node, $form) {
         else {
           // Ensure that the field content exists. For example, if field
           // permissions are enabled, the field may be missing for some users.
-          if (!isset($node->{$field}[$node->language]) || !is_array($node->{$field}[$node->language])) {
+          // Make sure to use the field API function, e.g. to respect language.
+          $fvalues = field_get_items('node', $node, $field);
+          if (empty($fvalues)) {
             continue;
           }
-          $fvalues = $node->{$field}[$node->language];
           $field_info = field_info_field($field);
           $field_keys = array_keys($field_info['columns']);
           foreach ($fvalues as $index => $value) {
@@ -156,10 +157,11 @@ function unique_field_node_validate($node, $form) {
         else {
           // Ensure that the field content exists. For example, if field
           // permissions are enabled, the field may be missing for some users.
-          if (!isset($node->{$field}[$node->language]) || !is_array($node->{$field}[$node->language])) {
+          // Make sure to use the field API function, e.g. to respect language.
+          $fvalues = field_get_items('node', $node, $field);
+          if (empty($fvalues)) {
             continue;
           }
-          $fvalues = $node->{$field}[$node->language];
           foreach ($fvalues as $index => $value) {
             if (!is_numeric($index) || !is_array($value)) {
               unset($fvalues[$index]);
