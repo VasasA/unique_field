@@ -27,7 +27,6 @@ class UniqueFieldCoreTestCase extends DrupalWebTestCase {
 
     // TODO: add tests for other types of fields: date, file, link, number, node
     // reference, user reference, etc.
-
     // Create and log in our privileged user.
     $this->privileged_user = $this->drupalCreateUser(array(
       'administer content types', 'administer nodes', 'bypass node access', 'unique_field_perm_admin', 'unique_field_perm_bypass',
