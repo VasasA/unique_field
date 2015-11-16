@@ -270,7 +270,7 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL, $nlang
     // Query condition for other fields
     $field_info = field_info_field($field);
     // Check all items/values
-    foreach ($values as $index => $value) {
+    foreach ($values as $value) {
       // Check all columns
       foreach ($value as $key => $val) {
         // Skip values that are not stored in the database
