@@ -71,7 +71,8 @@ function unique_field_node_validate($node, $form) {
   }
 
   // get list of unique fields for node type
-  if (empty($config->get('unique_field_fields_' . $node->type))) {
+  $variable = $config->get('unique_field_fields_' . $node->type);
+  if (empty($variable)) {
     $config->set('unique_field_fields_' . $node->type, array());
     $config->save();
   }
@@ -81,17 +82,20 @@ function unique_field_node_validate($node, $form) {
   if (count($fields)) {
 
     // get unique field settings for this node type
-    if (empty($config->get('unique_field_scope_' . $node->type))) {
+    $variable = $config->get('unique_field_scope_' . $node->type);
+    if (empty($variable)) {
       $config->set('unique_field_scope_' . $node->type, UNIQUE_FIELD_SCOPE_TYPE);
       $config->save();
     }
     $scope = $config->get('unique_field_scope_' . $node->type);
-    if (empty($config->get('unique_field_comp_' . $node->type))) {
+    $variable = $config->get('unique_field_comp_' . $node->type);
+    if (empty($variable)) {
       $config->set('unique_field_comp_' . $node->type, UNIQUE_FIELD_COMP_EACH);
       $config->save();
     }
     $comp = $config->get('unique_field_comp_' . $node->type);
-    if (empty($config->get('unique_field_show_matches_' . $node->type))) {
+    $variable = $config->get('unique_field_show_matches_' . $node->type);
+    if (empty($variable)) {
       $config->set('unique_field_show_matches_' . $node->type, array());
       $config->save();
     }
@@ -326,7 +330,8 @@ function unique_field_node_settings_form(&$form) {
   $fieldopts = array();
   $fieldopts[UNIQUE_FIELD_FIELDS_TITLE] = ($nodetype && !empty($nodetype->title_label)) ? check_plain($nodetype->title_label) . ' (' . t('title') . ')' : t('Title');
   $fieldopts[UNIQUE_FIELD_FIELDS_AUTHOR] = t('Author');
-  if (empty($config->get('language_content_type_' . $ntype))) {
+  $variable = $config->get('language_content_type_' . $ntype);
+  if (empty($variable)) {
     $config->set('language_content_type_' . $ntype, 0);
     $config->save();
   }
@@ -339,19 +344,23 @@ function unique_field_node_settings_form(&$form) {
       $fieldopts[$fieldname] = $info['label'] . ' (' . $fieldname . ')';
     }
   }
-  if (empty($config->get('unique_field_fields_' . $ntype))) {
+  $variable = $config->get('unique_field_fields_' . $ntype);
+  if (empty($variable)) {
       $config->set('unique_field_fields_' . $ntype, array());
       $config->save();
     }
-  if (empty($config->get('unique_field_scope_' . $ntype))) {
+  $variable = $config->get('unique_field_scope_' . $ntype);
+  if (empty($variable)) {
       $config->set('unique_field_scope_' . $ntype, UNIQUE_FIELD_SCOPE_TYPE);
       $config->save();
     }
-  if (empty($config->get('unique_field_comp_' . $ntype))) {
+  $variable = $config->get('unique_field_comp_' . $ntype);
+  if (empty($variable)) {
       $config->set('unique_field_comp_' . $ntype, UNIQUE_FIELD_COMP_EACH);
       $config->save();
     }
-  if (empty($config->get('unique_field_show_matches_' . $ntype))) {
+  $variable = $config->get('unique_field_show_matches_' . $ntype);
+  if (empty($variable)) {
       $config->set('unique_field_show_matches_' . $ntype, array());
       $config->save();
     }
