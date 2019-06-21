@@ -30,17 +30,6 @@ define('UNIQUE_FIELD_FIELDS_LANGUAGE', 'language');
 define('UNIQUE_FIELD_SHOW_MATCHES', 'show_matches');
 
 /**
- * Implements hook_help().
- */
-function unique_field_help($path, $arg) {
-  switch ($path) {
-    case 'admin/help#unique_field':
-      $output = '<p>' . t("The Unique Field module allows administrators to require that content supplied for specified fields is unique. For example, you may require that each node has a unique title or a different author. For configuration options, please see the <em>Unique Field restrictions</em> section of a content type's administration page.") . '</p>';
-      return $output;
-  }
-}
-
-/**
  * Implements hook_permission().
  */
 function unique_field_permission() {
