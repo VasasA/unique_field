@@ -169,7 +169,7 @@ function unique_field_node_validate($node, $form) {
           $values = $node->uid;
         }
         elseif ($field === UNIQUE_FIELD_FIELDS_LANGUAGE) {
-          $values = $node->language;
+          $values = $node->langcode;
         }
         else {
           // Ensure that the field content exists. For example, if field
@@ -190,7 +190,7 @@ function unique_field_node_validate($node, $form) {
         if (empty($values)) {
           continue;
         }
-        $match = unique_field_match_value($field, $values, $scope, $node->type, $node->language);
+        $match = unique_field_match_value($field, $values, $scope, $node->type, $node->langcode);
         // remove matches of this node
         if ($node->nid && is_array($match) && in_array($node->nid, $match)) {
           $key = array_search($node->nid, $match);
@@ -281,7 +281,7 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL, $nlang
   }
   elseif ($field === UNIQUE_FIELD_FIELDS_LANGUAGE) {
     // Query condition for bundle language property
-    $efq->propertyCondition('language', $values);
+    $efq->propertyCondition('langcode', $values);
   }
   else {
     // Query condition for other fields
@@ -310,7 +310,7 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL, $nlang
   }
   elseif ($scope === UNIQUE_FIELD_SCOPE_LANGUAGE && !empty($nlanguage)) {
     // Query condition for the language scope
-    $efq->propertyCondition('language', $nlanguage);
+    $efq->propertyCondition('langcode', $nlanguage);
   }
 
   // Execute query and collect results
