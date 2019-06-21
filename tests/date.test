@@ -8,14 +8,6 @@
 class UniqueFieldDateTestCase extends DrupalWebTestCase {
   protected $privileged_user;
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Unique Field: Date module tests',
-      'description' => 'Ensure that the Unique Field module functions properly with Date field types.',
-      'group' => 'Unique Field',
-    );
-  }
-
   public function setUp() {
     parent::setUp('field', 'field_ui', 'options', 'date', 'unique_field');
 

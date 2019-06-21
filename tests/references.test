@@ -8,14 +8,6 @@
 class UniqueFieldReferencesTestCase extends DrupalWebTestCase {
   protected $privileged_user;
 
-  public static function getInfo() {
-    return array(
-      'name' => 'Unique Field: References module tests',
-      'description' => 'Ensure that the Unique Field module functions properly with References field types.',
-      'group' => 'Unique Field',
-    );
-  }
-
   public function setUp() {
     parent::setUp('field', 'field_ui', 'options', 'node_reference', 'user_reference', 'unique_field');
 

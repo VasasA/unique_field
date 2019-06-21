@@ -1,0 +1,17 @@
+[UniqueFieldCoreTestCase]
+name = Unique Field: Core tests
+description = Ensure that the Unique Field module functions properly with Drupal core field types.
+group = Unique Field
+file = core.test
+
+[UniqueFieldDateTestCase]
+name = Unique Field: Date module tests
+description = Ensure that the Unique Field module functions properly with Date field types.
+group = Unique Field
+file = date.test
+
+[UniqueFieldReferencesTestCase]
+name = Unique Field: References module tests
+description = Ensure that the Unique Field module functions properly with References field types.
+group = Unique Field
+file = references.test
