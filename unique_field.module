@@ -75,21 +75,38 @@ function unique_field_form_alter(&$form, &$form_state, $form_id) {
  * Implements hook_node_validate().
  */
 function unique_field_node_validate($node, $form) {
+  $config = config('unique_field.settings');
   // skip validation if deleting a node or if override value is set
   if ((!empty($node->op) && !empty($node->delete) && $node->op === $node->delete) || (is_array($form) && isset($form['unique_field_override']) && is_array($form['unique_field_override']) && $form['unique_field_override']['#value'] && user_access('unique_field_perm_bypass'))) {
     return;
   }
 
   // get list of unique fields for node type
-  $fields = variable_get('unique_field_fields_' . $node->type, array());
+  if (empty($config->get('unique_field_fields_' . $node->type))) {
+    $config->set('unique_field_fields_' . $node->type, array());
+    $config->save();
+  }
+  $fields = $config->get('unique_field_fields_' . $node->type);
 
   // check if there are unique fields for this node type
   if (count($fields)) {
 
     // get unique field settings for this node type
-    $scope = variable_get('unique_field_scope_' . $node->type, UNIQUE_FIELD_SCOPE_TYPE);
-    $comp = variable_get('unique_field_comp_' . $node->type, UNIQUE_FIELD_COMP_EACH);
-    $var_show_matches = variable_get('unique_field_show_matches_' . $node->type, array());
+    if (empty($config->get('unique_field_scope_' . $node->type))) {
+      $config->set('unique_field_scope_' . $node->type, UNIQUE_FIELD_SCOPE_TYPE);
+      $config->save();
+    }
+    $scope = $config->get('unique_field_scope_' . $node->type);
+    if (empty($config->get('unique_field_comp_' . $node->type))) {
+      $config->set('unique_field_comp_' . $node->type, UNIQUE_FIELD_COMP_EACH);
+      $config->save();
+    }
+    $comp = $config->get('unique_field_comp_' . $node->type);
+    if (empty($config->get('unique_field_show_matches_' . $node->type))) {
+      $config->set('unique_field_show_matches_' . $node->type, array());
+      $config->save();
+    }
+    $var_show_matches = $config->get('unique_field_show_matches_' . $node->type);
     $show_matches = is_array($var_show_matches) && in_array(UNIQUE_FIELD_SHOW_MATCHES, $var_show_matches);
 
     // initialization
@@ -313,13 +330,18 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL, $nlang
  * Add the unique field settings form to content type forms (node_type_form).
  */
 function unique_field_node_settings_form(&$form) {
+  $config = config('unique_field.settings');
   // load fields for content type
   $ntype = $form['#node_type']->type;
   $nodetype = !empty($ntype) ? node_type_get_type($ntype) : FALSE;
   $fieldopts = array();
   $fieldopts[UNIQUE_FIELD_FIELDS_TITLE] = ($nodetype && !empty($nodetype->title_label)) ? check_plain($nodetype->title_label) . ' (' . t('title') . ')' : t('Title');
   $fieldopts[UNIQUE_FIELD_FIELDS_AUTHOR] = t('Author');
-  if (module_exists('locale') && !empty($ntype) && variable_get('language_content_type_' . $ntype, 0)) {
+  if (empty($config->get('language_content_type_' . $ntype))) {
+    $config->set('language_content_type_' . $ntype, 0);
+    $config->save();
+  }
+  if (module_exists('locale') && !empty($ntype) && $config->get('language_content_type_' . $ntype)) {
     $fieldopts[UNIQUE_FIELD_FIELDS_LANGUAGE] = t('Language');
   }
   if (!empty($ntype)) {
@@ -328,6 +350,22 @@ function unique_field_node_settings_form(&$form) {
       $fieldopts[$fieldname] = $info['label'] . ' (' . $fieldname . ')';
     }
   }
+  if (empty($config->get('unique_field_fields_' . $ntype))) {
+      $config->set('unique_field_fields_' . $ntype, array());
+      $config->save();
+    }
+  if (empty($config->get('unique_field_scope_' . $ntype))) {
+      $config->set('unique_field_scope_' . $ntype, UNIQUE_FIELD_SCOPE_TYPE);
+      $config->save();
+    }
+  if (empty($config->get('unique_field_comp_' . $ntype))) {
+      $config->set('unique_field_comp_' . $ntype, UNIQUE_FIELD_COMP_EACH);
+      $config->save();
+    }
+  if (empty($config->get('unique_field_show_matches_' . $ntype))) {
+      $config->set('unique_field_show_matches_' . $ntype, array());
+      $config->save();
+    }
 
   // build the form
   $form['unique_field'] = array(
@@ -342,7 +380,7 @@ function unique_field_node_settings_form(&$form) {
     '#type' => 'checkboxes',
     '#title' => t('Choose the fields that should be unique'),
     '#options' => $fieldopts,
-    '#default_value' => !empty($ntype) ? variable_get('unique_field_fields_' . $ntype, array()) : array(),
+    '#default_value' => !empty($ntype) ? $config->get('unique_field_fields_' . $ntype) : array(),
     '#description' => t('After designating that certain fields should be unique, users will not be able to submit the content form to create a new node or update an existing one if it contains values in the designated fields that duplicate others.'),
   );
   $form['unique_field']['unique_field_scope'] = array(
@@ -354,7 +392,7 @@ function unique_field_node_settings_form(&$form) {
       UNIQUE_FIELD_SCOPE_ALL => t('All nodes'),
       UNIQUE_FIELD_SCOPE_NODE => t('Single node only'),
     ),
-    '#default_value' => !empty($ntype) ? variable_get('unique_field_scope_' . $ntype, UNIQUE_FIELD_SCOPE_TYPE) : UNIQUE_FIELD_SCOPE_TYPE,
+    '#default_value' => !empty($ntype) ? $config->get('unique_field_scope_' . $ntype) : UNIQUE_FIELD_SCOPE_TYPE,
     '#description' => t('Choose whether the values in the specified fields must be unique among nodes of this content type, among nodes of the same language, among all nodes, or only among the fields of the present node.'),
   );
   $form['unique_field']['unique_field_comp'] = array(
@@ -364,14 +402,14 @@ function unique_field_node_settings_form(&$form) {
       UNIQUE_FIELD_COMP_EACH => t('Each of the specified fields must have a unique value'),
       UNIQUE_FIELD_COMP_ALL => t('The combination of values from the specified fields must be unique'),
     ),
-    '#default_value' => !empty($ntype) ? variable_get('unique_field_comp_' . $ntype, UNIQUE_FIELD_COMP_EACH) : UNIQUE_FIELD_COMP_EACH,
+    '#default_value' => !empty($ntype) ? $config->get('unique_field_comp_' . $ntype) : UNIQUE_FIELD_COMP_EACH,
     '#description' => t('For example, if you have fields for the parts of a street address (street number and name, city, and zip code) on a node, and want to allow only one node per complete address, but not only one node per city or per zip code, then you would want to choose that the fields must be unique in combination.'),
   );
   $form['unique_field']['unique_field_show_matches'] = array(
     '#type' => 'checkboxes',
     '#title' => t('Check this box to show which nodes match when duplicate values are found'),
     '#options' => array(UNIQUE_FIELD_SHOW_MATCHES => t('Enabled')),
-    '#default_value' => !empty($ntype) ? variable_get('unique_field_show_matches_' . $ntype, array()) : array(),
+    '#default_value' => !empty($ntype) ? $config->get('unique_field_show_matches_' . $ntype) : array(),
   );
 
   // add validation function
