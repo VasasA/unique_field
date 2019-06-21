@@ -391,3 +391,14 @@ function unique_field_node_settings_form_validate($form, &$form_state) {
     }
   }
 }
+
+/**
+ * Implements hook_config_info().
+ */
+function unique_field_config_info() {
+  $prefixes['unique_field.settings'] = array(
+    'label' => t('Unique field settings'),
+    'group' => t('Configuration'),
+  );
+  return $prefixes;
+}
