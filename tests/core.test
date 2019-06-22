@@ -21,7 +21,7 @@ class UniqueFieldCoreTestCase extends DrupalWebTestCase {
     // reference, user reference, etc.
     // Create and log in our privileged user.
     $this->privileged_user = $this->drupalCreateUser(array(
-      'administer content types', 'administer nodes', 'bypass node access', 'unique_field_perm_admin', 'unique_field_perm_bypass',
+      'administer content types', 'administer nodes', 'administer fields', 'bypass node access', 'unique_field_perm_admin', 'unique_field_perm_bypass',
     ));
     $this->drupalLogin($this->privileged_user);
   }
@@ -358,7 +358,7 @@ class UniqueFieldCoreTestCase extends DrupalWebTestCase {
     $this->assertText('The content type Unique Integer has been updated.', 'Content type updated.');
 
     // Attempt to create 2 nodes with the same integer value
-    $num = mt_rand();
+    $num = mt_rand(0,999999);
     $edit = array();
     $edit['title'] = $this->randomName(24);
     $edit['body[und][0][value]'] = $this->randomName(48);
@@ -420,7 +420,7 @@ class UniqueFieldCoreTestCase extends DrupalWebTestCase {
     $this->assertText('The content type Unique Integer 2 has been updated.', 'Content type updated.');
 
     // Attempt to create 2 nodes with the same integer in different content types
-    $num = mt_rand();
+    $num = mt_rand(0,999999);
     $edit = array();
     $edit['title'] = $this->randomName(24);
     $edit['body[und][0][value]'] = $this->randomName(48);
@@ -475,7 +475,7 @@ class UniqueFieldCoreTestCase extends DrupalWebTestCase {
     $this->assertText('The content type Unique Integer Single has been updated.', 'Content type updated.');
 
     // Attempt to create a node with the same integer in both fields
-    $num = mt_rand();
+    $num = mt_rand(0,999999);
     $edit = array();
     $edit['title'] = $this->randomName(24);
     $edit['body[und][0][value]'] = $this->randomName(48);
