@@ -412,6 +412,9 @@ function unique_field_node_settings_form(&$form) {
 
   // add validation function
   $form['#validate'][] = 'unique_field_node_settings_form_validate';
+
+  // add submit function
+  $form['#submit'][] = 'unique_field_node_settings_form_submit';
 }
 
 /**
@@ -426,6 +429,34 @@ function unique_field_node_settings_form_validate($form, &$form_state) {
       form_set_error('unique_field_fields', t('The author and language fields are not supported within the scope of a single node.'));
     }
   }
+}
+
+/**
+ * Form submit callback for unique_field_node_settings_form.
+ */
+function unique_field_node_settings_form_submit($form, &$form_state) {
+  $config = config('unique_field.settings');
+  $type = $form_state['values']['type'];
+  $old_type = isset($form_state['values']['old_type']) ? $form_state['values']['old_type'] : $type->type;
+  $variables = $form_state['values'];
+  // Save or reset persistent variable values.
+  foreach ($variables as $key => $value) {
+    if (substr_count($key, 'unique_field')) {
+      $variable_new = $key . '_' . $type;
+      $variable_old = $key . '_' . $old_type;
+
+      if (is_array($value)) {
+        $value = array_keys(array_filter($value));
+      }
+      $config->set($variable_new, $value);
+
+      if ($variable_new != $variable_old) {
+        $config->clear($variable_old);
+      }
+    }
+  }
+  $config->save();
+  return;
 }
 
 /**
