@@ -6,7 +6,7 @@
  * language, taxonomy terms, or other fields are unique.
  *
  * Unique Field module
- * Compatible with Drupal 7.x
+ * Compatible with Backdrop 1.x
  *
  * By Joe Turgeon [http://arithmetric.com]
  */

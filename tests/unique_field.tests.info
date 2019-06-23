@@ -1,6 +1,6 @@
 [UniqueFieldCoreTestCase]
 name = Unique Field: Core tests
-description = Ensure that the Unique Field module functions properly with Drupal core field types.
+description = Ensure that the Unique Field module functions properly with Backdrop core field types.
 group = Unique Field
 file = core.test
 
