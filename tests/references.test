@@ -13,7 +13,7 @@ class UniqueFieldReferencesTestCase extends DrupalWebTestCase {
 
     // Create and log in our privileged user.
     $this->privileged_user = $this->drupalCreateUser(array(
-      'administer content types', 'administer nodes', 'bypass node access', 'unique_field_perm_admin', 'unique_field_perm_bypass',
+      'administer content types', 'administer nodes', 'administer fields', 'bypass node access', 'unique_field_perm_admin', 'unique_field_perm_bypass',
     ));
     $this->drupalLogin($this->privileged_user);
   }
@@ -54,7 +54,7 @@ class UniqueFieldReferencesTestCase extends DrupalWebTestCase {
     $this->assertText($edit['body[und][0][value]'], 'Unique Node (uf_node) node has been created');
 
     // Attempt to create 2 nodes that reference the same node
-    $ref_nid = 1;
+    $ref_nid = 3;
     $edit = array();
     $edit['title'] = $this->randomName(24);
     $edit['body[und][0][value]'] = $this->randomName(48);
@@ -66,7 +66,7 @@ class UniqueFieldReferencesTestCase extends DrupalWebTestCase {
     $this->assertText('The Unique Node Node field requires a unique value, and the specified value is already used', 'Unique Node (uf_node) node with duplicate content could not be created');
 
     // Check for false negative: Attempt to create a node with a unique text
-    $ref_nid = 2;
+    $ref_nid = 3;
     $edit = array();
     $edit['title'] = $this->randomName(24);
     $edit['body[und][0][value]'] = $this->randomName(48);
@@ -134,7 +134,7 @@ class UniqueFieldReferencesTestCase extends DrupalWebTestCase {
 
     // Attempt to create 2 nodes that reference the same node in different
     // content types
-    $ref_nid = 1;
+    $ref_nid = 3;
     $edit = array();
     $edit['title'] = $this->randomName(24);
     $edit['body[und][0][value]'] = $this->randomName(48);
@@ -146,7 +146,7 @@ class UniqueFieldReferencesTestCase extends DrupalWebTestCase {
     $this->assertText('The Unique Node 2 Node field requires a unique value, and the specified value is already used', 'Unique Node 2 (uf_node2) node with duplicate content could not be created');
 
     // Check for false negative: Attempt to create a node with a unique text
-    $ref_nid = 2;
+    $ref_nid = 3;
     $edit = array();
     $edit['title'] = $this->randomName(24);
     $edit['body[und][0][value]'] = $this->randomName(48);
@@ -203,7 +203,7 @@ class UniqueFieldReferencesTestCase extends DrupalWebTestCase {
     $this->assertText($edit['body[und][0][value]'], 'Unique Node Single (uf_node_single) node has been created');
 
     // Attempt to create a node with the same text in both fields
-    $ref_nid = 1;
+    $ref_nid = 3;
     $edit = array();
     $edit['title'] = $this->randomName(24);
     $edit['body[und][0][value]'] = $this->randomName(48);
@@ -221,8 +221,8 @@ class UniqueFieldReferencesTestCase extends DrupalWebTestCase {
     $edit = array();
     $edit['title'] = $this->randomName(24);
     $edit['body[und][0][value]'] = $this->randomName(48);
-    $edit['field_uf_node_single_node_1[und]'] = 1;
-    $edit['field_uf_node_single_node_2[und]'] = 2;
+    $edit['field_uf_node_single_node_1[und]'] = 4;
+    $edit['field_uf_node_single_node_2[und]'] = 3;
     $this->drupalPost('node/add/uf-node-single', $edit, t('Save'));
     $this->assertText($edit['body[und][0][value]'], 'Unique Node Single (uf_node_single) node has been created');
   }

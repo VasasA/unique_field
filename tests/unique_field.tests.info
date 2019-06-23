@@ -12,6 +12,6 @@ file = date.test
 
 [UniqueFieldReferencesTestCase]
 name = Unique Field: References module tests
-description = Ensure that the Unique Field module functions properly with References field types.
+description = Ensure that the Unique Field module functions properly with References field types. IMPORTANT!: References module is needed!
 group = Unique Field
 file = references.test
