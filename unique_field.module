@@ -346,24 +346,24 @@ function unique_field_node_settings_form(&$form) {
   }
   $variable = $config->get('unique_field_fields_' . $ntype);
   if (empty($variable)) {
-      $config->set('unique_field_fields_' . $ntype, array());
-      $config->save();
-    }
+    $config->set('unique_field_fields_' . $ntype, array());
+    $config->save();
+  }
   $variable = $config->get('unique_field_scope_' . $ntype);
   if (empty($variable)) {
-      $config->set('unique_field_scope_' . $ntype, UNIQUE_FIELD_SCOPE_TYPE);
-      $config->save();
-    }
+    $config->set('unique_field_scope_' . $ntype, UNIQUE_FIELD_SCOPE_TYPE);
+    $config->save();
+  }
   $variable = $config->get('unique_field_comp_' . $ntype);
   if (empty($variable)) {
-      $config->set('unique_field_comp_' . $ntype, UNIQUE_FIELD_COMP_EACH);
-      $config->save();
-    }
+    $config->set('unique_field_comp_' . $ntype, UNIQUE_FIELD_COMP_EACH);
+    $config->save();
+  }
   $variable = $config->get('unique_field_show_matches_' . $ntype);
   if (empty($variable)) {
-      $config->set('unique_field_show_matches_' . $ntype, array());
-      $config->save();
-    }
+    $config->set('unique_field_show_matches_' . $ntype, array());
+    $config->save();
+  }
 
   // build the form
   $form['unique_field'] = array(
