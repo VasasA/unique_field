@@ -311,8 +311,8 @@ function unique_field_match_value($field, $values, $scope, $ntype = NULL, $nlang
   $nids = array();
   if (isset($result[$entity_type]) && is_array($result[$entity_type])) {
     foreach ($result[$entity_type] as $item) {
-      if (!empty($item->nid)) {
-        $nids[] = $item->nid;
+      if (!empty($item->entity_id)) {
+        $nids[] = $item->entity_id;
       }
     }
   }

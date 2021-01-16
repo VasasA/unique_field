@@ -3,3 +3,4 @@ description = "Provides content validation requirement that a node's author, lan
 backdrop = 1.x
 type = module
 tags[] = Content
+dependencies[] = system (>=1.15.0)
