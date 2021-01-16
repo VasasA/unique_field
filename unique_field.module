@@ -330,12 +330,8 @@ function unique_field_node_settings_form(&$form) {
   $fieldopts = array();
   $fieldopts[UNIQUE_FIELD_FIELDS_TITLE] = ($nodetype && !empty($nodetype->title_label)) ? check_plain($nodetype->title_label) . ' (' . t('title') . ')' : t('Title');
   $fieldopts[UNIQUE_FIELD_FIELDS_AUTHOR] = t('Author');
-  $variable = $config->get('language_content_type_' . $ntype);
-  if (empty($variable)) {
-    $config->set('language_content_type_' . $ntype, 0);
-    $config->save();
-  }
-  if (module_exists('locale') && !empty($ntype) && $config->get('language_content_type_' . $ntype)) {
+  $node_type = node_type_get_type($ntype);
+  if (module_exists('locale') && !empty($ntype) && $node_type->settings['language']) {
     $fieldopts[UNIQUE_FIELD_FIELDS_LANGUAGE] = t('Language');
   }
   if (!empty($ntype)) {
