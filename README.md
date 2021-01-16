@@ -16,8 +16,10 @@ node from being saved with a date already used in another node.
 Installation
 ------------
 
-- Install this module using the official Backdrop CMS instructions at
+- Install this module using the official Backdrop CMS instructions at 
   https://backdropcms.org/guide/modules
+- Use release 1.x-1.0.0 of Unique Field for Backdrop 1.14.4 and earlier versions: 
+  https://github.com/backdrop-contrib/unique_field/releases/tag/1.x-1.0.0
 
 
 Usage
@@ -54,7 +56,7 @@ Administration > Configuration > Development > Testing > Unique Field
 Issues
 ------
 
-Bugs and Feature requests should be reported in the Issue Queue:
+Bugs and Feature requests should be reported in the Issue Queue: 
 https://github.com/backdrop-contrib/unique_field/issues
 
 
