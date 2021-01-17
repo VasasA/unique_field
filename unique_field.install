@@ -7,10 +7,22 @@
 
 /**
  * Implements hook_uninstall().
- *
- * Deletes all module variables and then clears the variables cache.
  */
 function unique_field_uninstall() {
-  db_query("DELETE FROM {variable} WHERE name LIKE 'unique\_field\_%'");
-  cache_clear_all('variables', 'cache');
+
+}
+
+/**
+ * Move unique_field module settings from variables to config.
+ */
+function unique_field_update_1000() {
+  // Migrate variables to config and delete.
+  $config = config('unique_field.settings');
+  $result = db_query("SELECT * FROM {variable} WHERE name LIKE 'unique\_field\_%'");
+  foreach ($result as $row) {
+    $variable = (object) $row;
+    $config->set($variable->name, unserialize($variable->value));
+    update_variable_del($variable->name);
+  }
+  $config->save();
 }
